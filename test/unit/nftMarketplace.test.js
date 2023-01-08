@@ -40,16 +40,31 @@ const { developmentChains } = require("../../helper-hardhat-config")
               })
 
               it("Reverts if price is not above 0", async function () {
-                  expect(
-                      await nftMarketplace.listItem(basicNft.address, TOKEN_ID, 0)
+                  await expect(
+                      nftMarketplace.listItem(basicNft.address, TOKEN_ID, 0)
                   ).to.be.revertedWith("NftMarketplace__PriceMustBeAboveZero")
               })
 
+              //   it("Reverts if token not approved my owner address", async function () {
+              //       notOwner = nftMarketplace.connect(user)
+              //       await expect(
+              //           nftMarketplace.listItem(basicNft.address, TOKEN_ID, { value: PRICE })
+              //       ).to.be.revertedWith("NftMarketplace__NotApprovedForMarketplace")
+              //   })
+
               it("onlyOwner can list an NFT", async function () {
-                  NotOwner = nftMarketplace.connect(user)
-                  expect(
-                      await NotOwner.listItem(basicNft.address, TOKEN_ID, PRICE)
+                  notOwner = nftMarketplace.connect(user)
+                  await expect(
+                      notOwner.listItem(basicNft.address, TOKEN_ID, PRICE)
                   ).to.be.revertedWith("NftMarketplace__NotOwner")
+              })
+          })
+
+          describe("buyItem", function () {
+              it("Reverts if NFT not listed", async function () {
+                  await expect(
+                      nftMarketplace.buyItem(basicNft.address, TOKEN_ID)
+                  ).to.be.revertedWith("NftMarketplace__NotListed")
               })
           })
       })
