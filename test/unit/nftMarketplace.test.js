@@ -1,6 +1,7 @@
 const { assert, expect } = require("chai")
 const { network, deployments, ethers, getNamedAccounts } = require("hardhat")
 const { developmentChains } = require("../../helper-hardhat-config")
+const { parseEther } = require("ethers").utils
 
 !developmentChains.includes(network.name)
     ? describe.skip
@@ -45,12 +46,12 @@ const { developmentChains } = require("../../helper-hardhat-config")
                   ).to.be.revertedWith("NftMarketplace__PriceMustBeAboveZero")
               })
 
-              //   it("Reverts if token not approved my owner address", async function () {
-              //       notOwner = nftMarketplace.connect(user)
-              //       await expect(
-              //           nftMarketplace.listItem(basicNft.address, TOKEN_ID, { value: PRICE })
-              //       ).to.be.revertedWith("NftMarketplace__NotApprovedForMarketplace")
-              //   })
+              // it("Reverts if token not approved my owner address", async function () {
+              //     notOwner = nftMarketplace.connect(user)
+              //     await expect(
+              //         nftMarketplace.listItem(basicNft.address, TOKEN_ID, { value: PRICE })
+              //     ).to.be.revertedWith("NftMarketplace__NotApprovedForMarketplace")
+              // })
 
               it("onlyOwner can list an NFT", async function () {
                   notOwner = nftMarketplace.connect(user)
@@ -65,6 +66,17 @@ const { developmentChains } = require("../../helper-hardhat-config")
                   await expect(
                       nftMarketplace.buyItem(basicNft.address, TOKEN_ID)
                   ).to.be.revertedWith("NftMarketplace__NotListed")
+              })
+
+              it("Reverts if price not met", async function () {
+                  LOW_BALL = ethers.utils.parseEther("0.05")
+                  await nftMarketplace.listItem(basicNft.address, TOKEN_ID, PRICE)
+                  const userConnectedNftMarketplace = nftMarketplace.connect(user)
+                  await expect(
+                      userConnectedNftMarketplace.buyItem(basicNft.address, TOKEN_ID, {
+                          value: LOW_BALL,
+                      })
+                  ).to.be.revertedWith("NftMarketplace__PriceNotMet")
               })
           })
       })
