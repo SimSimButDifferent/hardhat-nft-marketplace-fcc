@@ -40,18 +40,26 @@ const { parseEther } = require("ethers").utils
                   )
               })
 
+              it("Reverts if NFT is already listed", async function () {
+                  await nftMarketplace.listItem(basicNft.address, TOKEN_ID, PRICE)
+                  const error = `AlreadyListed("${basicNft.address}", ${TOKEN_ID})`
+                  await expect(
+                      nftMarketplace.listItem(basicNft.address, TOKEN_ID, PRICE)
+                  ).to.be.revertedWith(error)
+              })
+
               it("Reverts if price is not above 0", async function () {
                   await expect(
                       nftMarketplace.listItem(basicNft.address, TOKEN_ID, 0)
                   ).to.be.revertedWith("NftMarketplace__PriceMustBeAboveZero")
               })
 
-              // it("Reverts if token not approved my owner address", async function () {
-              //     notOwner = nftMarketplace.connect(user)
-              //     await expect(
-              //         nftMarketplace.listItem(basicNft.address, TOKEN_ID, { value: PRICE })
-              //     ).to.be.revertedWith("NftMarketplace__NotApprovedForMarketplace")
-              // })
+              it("Reverts if token not approved", async function () {
+                  await basicNft.approve(ethers.constants.AddressZero, TOKEN_ID)
+                  await expect(
+                      nftMarketplace.listItem(basicNft.address, TOKEN_ID, PRICE)
+                  ).to.be.revertedWith("NftMarketplace__NotApprovedForMarketplace")
+              })
 
               it("onlyOwner can list an NFT", async function () {
                   notOwner = nftMarketplace.connect(user)
@@ -78,5 +86,16 @@ const { parseEther } = require("ethers").utils
                       })
                   ).to.be.revertedWith("NftMarketplace__PriceNotMet")
               })
+
+              //   it("Emits an event when buying NFT", async function () {
+              //       nftMarketplace.connect(deployer)
+              //       await nftMarketplace.listItem(basicNft.address, TOKEN_ID, PRICE)
+              //       const userConnectedNftMarketplace = nftMarketplace.connect(user)
+              //       expect(
+              //           await userConnectedNftMarketplace.buyItem(basicNft.address, TOKEN_ID, {
+              //               value: PRICE,
+              //           })
+              //       ).to.emit("ItemBought")
+              //   })
           })
       })
